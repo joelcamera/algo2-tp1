@@ -1,0 +1,181 @@
+
+
+\begin{tad}{\tadNombre{Tabla}}
+\tadGeneros{tabla}
+\tadExporta{tabla, generadores, observadores, puedoAgregar?, puedoBorrar?, verJoin }
+\tadUsa{\tadNombre{Campos}, \tadNombre{Claves}, \tadNombre{Registros}, \tadNombre{Nat}, \tadNombre{Bool} }
+
+
+%===============================================
+%   IGUALDAD OBS
+%===============================================
+
+\tadIgualdadObservacional{t}{s}{tabla}{
+		 camposDe(t) $\igobs$ camposDe(s) $\land$
+		 clavesDe(t) $\igobs$ clavesDe(s) $\land$
+		 registrosDe(t) $\igobs$ registrosDe(s) $\land$
+		 \#cambios(t) $\igobs$ \#cambios(s)
+}
+
+
+%===============================================
+%   OBSERVADORES
+%===============================================
+
+\tadAlinearFunciones{cantidadValores}{registro/r,campo/c,valor/v}
+
+\tadObservadores
+\tadOperacion{camposDe}{tabla}{campos}{}
+\tadOperacion{clavesDe}{tabla}{clavest}{}
+\tadOperacion{registrosDe}{tabla}{registros}{}
+\tadOperacion{\#cambios}{tabla}{nat}{}
+
+
+%===============================================
+%   GENERADORES
+%===============================================
+
+\tadGeneradores
+\tadOperacion{nuevaTabla}{campos/camp,claves/cl}{tabla}
+{ $\lnot$ vacio?(claves(camp)) $\land$ $\lnot$ vacio?(cl) $\land$ cl $\subseteq$ claves(camp)  }
+\tadOperacion{agregarRegistro}{tabla/t,registro/r}{tabla}{ 
+	regValido?(t,r) $\yluego$
+	puedoAgregar?(t,r) }
+\tadOperacion{borrarRegistros}{tabla/t,clave/c,valor/v}{tabla}{ cvValido(t,c,v) $\yluego$  puedoBorrar?(t,c,v) }
+
+
+
+
+%===============================================
+%   OTRS PREDICADOS
+%===============================================
+\textbf{otros predicados}
+
+\tadOperacion{regValido?}{tabla/t,registro/r}{bool}{ 
+	claves(camposDe(t)) = claves(r) $\yluego$  
+	$(\forall s:\text{string})$ def?(s,r) $\impluego$ tipo(r[s]) = camposDe(t)[s] }
+
+\tadOperacion{cvValido?}{tabla/t,clave/c,valor/v}{bool}{ 
+	def?(c, camposDe(t)) $\yluego$ camposDe(t)[c] = tipo(v) }
+
+
+%===============================================
+%   OTRAS OPERACIONES
+%===============================================
+
+\tadOtrasOperaciones
+
+\tadOperacion{puedoAgregar?}{tabla/t,registro/r}{bool}{ regValido?(t,r) }
+\tadOperacion{puedoBorrar?}{tabla/t,clave/c,valor/v}{bool}{ cvValido?(t,c,v) }
+
+\tadOperacion{regenerar}{tabla/t,clave/c,valor/v}{tabla}{}
+
+
+\tadOperacion{todosDistintos}{registro/r1,registro/r2}{bool}{}
+\tadOperacion{soloCampClaves}{tabla/t,registro/r}{registro}{}
+
+
+\tadOperacion{verJoin}{tabla/t1,tabla/t2,campo/c}{registros}{
+c $\in$ (clavesDe(t1) $\cap$ clavesDe(t2)
+$\yluego$ \\camposDe(t1)[c] = camposDe(t2)[c] 
+}
+\tadOperacion{verJoinAux}{tabla/t1,tabla/t2,registros/rs,campo/c}{registros}{}
+\tadOperacion{regJoin}{tabla/t2,registros/rs,campo/c}{registro}{}
+\tadOperacion{tieneRegistro?}{tabla/t2,campo/c,valor/v}{bool}{}
+\tadOperacion{obtenerRegistro}{registros/rs,campo/c,valor/v}{registro}{}
+
+
+%===============================================
+%   AXIOMAS
+%===============================================
+
+\newpage
+
+\tadAxiomas[\paratodo{registro}{r,r1,r2}, \paratodo{campo}{c,c'},\paratodo{campos}{camp}, \paratodo{clavest}{cl,clr1,clr2}, \paratodo{valor}{v,v'}]
+
+\tadAlinearAxiomas{puedoAgregarbla(nuevaTabla(camp,cl),c,v)}
+
+
+
+%-----------------------
+%   ax: observadores 
+%-----------------------
+
+\tadAxioma{camposDe(nuevaTabla(camp,cl))}{camp}
+\tadAxioma{camposDe(agregarRegistro(t,r))}{camposDe(t)}
+\tadAxioma{camposDe(borrarRegistros(t,c,v))}{camposDe(t)}
+
+\tadAxioma{clavesDe(nuevaTabla(camp,cl))}{cl}
+\tadAxioma{clavesDe(agregarRegistro(t,r))}{clavesDe(t)}
+\tadAxioma{clavesDe(borrarRegistros(t,c,v))}{clavesDe(t)}
+
+
+\tadAxioma{registrosDe(nuevaTabla(camp,cl))}{$\emptyset$ }
+\tadAxioma{registrosDe(agregarRegistro(t,r))}{Ag(r, registrosDe(t))}
+\tadAxioma{registrosDe(borrarRegistros(t,c,v))}{ registrosDe(regenerar(t,c,v))  }
+
+\tadAxioma{\#cambios(nuevaTabla(camp,cl))}{0}
+\tadAxioma{\#cambios(agregarRegistro(t,r))}{ 1 + \#cambios(t) }
+\tadAxioma{\#cambios(borrarRegistros(t,c,v))}{ \#(registrosDe(t)) -\#(registrosDe(borrarRegistros(t,c,v)) + \#cambios(t)  }
+
+
+%-----------------------
+%   ax: restricciones 
+%-----------------------
+
+\tadAxioma{puedoAgregar?(nuevaTabla(camp,cl),r)}{ true  }
+\tadAxioma{puedoAgregar?(agregarRegistro(t,r'),r)}{ todosDistintos(soloCamposClave(t,r),  soloCamposClave(t,r')) $\land$ puedoAgregar?(t,r) }
+\tadAxioma{puedoAgregar?(borrarRegistros(t,c,v),r)}{ puedoAgregar?(regenerar(t,c,v),r)  }
+
+\tadAxioma{puedoBorrar?(nuevaTabla(camp,cl),c,v)}{ false  }
+\tadAxioma{puedoBorrar?(agregarRegistro(t,r),c,v)}{ obtener(c,r)=v $\lor$ puedoBorrar?(t,c,v)  }
+\tadAxioma{puedoBorrar?(borrarRegistros(t,c',v'),c,v)}{ puedoBorrar?(regenerar(t,c',v'),c,v)  }
+
+
+%-----------------------
+%   ax: regenerar 
+%-----------------------
+
+\tadAxioma{regenerar(nuevaTabla(camp,cl),c,v)}{nuevaTabla(camp,cl)}
+\tadAxioma{regenerar(agregarRegistro(t,r),c,v)}{ \IF\ obtener(c,r)=v THEN regenerar(t,c,v) ELSE agregarRegistro(regenerar(t,c,v),r) FI }
+\tadAxioma{regenerar(borrarRegistros(t,c',v'),c,v)}{ borrarRegistros(regenerar(t,c,v),c',v') }
+
+\tadAxioma{todosDistintos(r1,r2)}{ \IF vacio?(claves(r1)) THEN true ELSE { 
+				\IF r1[primc(r1)] = r2[primc(r1)] THEN false ELSE
+					todosDistintos(sinc(r1), r2)
+				FI
+			} FI
+  }
+\tadAxioma{soloCampClaves(t,r)}{ borrarResto( clavesDe(t), r)  }
+
+
+
+
+%-----------------------
+%   ax: verJoin
+%-----------------------
+
+\tadAxioma{verJoin(t1,t2,rs,c)}{ verJoinAux(t1,t2,registrosDe(t1),c) }
+
+\tadAxioma{verJoinAux(t1,t2,rs,c)}{
+	\IF vacio?(rs) THEN $\emptyset$ ELSE { 
+		\IF tieneRegistro?(t2, c, dameUno(rs)[c]) THEN
+			Ag( regJoin(t2, rs, c), verJoinAux(t1,t2,sinUno(rs),c) )
+		ELSE
+			verJoinAux(t1,t2,sinUno(rs),c)
+		FI }
+	FI
+}
+
+\tadAxioma{regJoin(t2,rs,c)}{  unir(  obtenerRegistro( registrosDe(t2), c, dameUno(rs)[c] ),   dameUno(rs)  )  }
+\tadAxioma{tieneRegistro?(t2,c,v)}{  puedoBorrar?(t2, c, v)  }
+\tadAxioma{obtenerRegistro(rs, c, v)}{
+	\IF dameUno(rs)[c] = v THEN dameUno(rs) ELSE
+		obtenerRegistro(sinUno(rs),c,v)
+	FI	
+}
+
+
+
+
+\end{tad}

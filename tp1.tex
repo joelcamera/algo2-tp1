@@ -1,0 +1,130 @@
+\documentclass[10pt, a4paper]{article}
+\usepackage[paper=a4paper, left=1.5cm, right=1.5cm, bottom=1.5cm, top=3.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{indentfirst}
+\usepackage{fancyhdr}
+\usepackage{latexsym}
+\usepackage{lastpage}
+\usepackage{aed2-symb,aed2-itef,aed2-tad}
+\usepackage{caratula}
+\usepackage[colorlinks=true, linkcolor=blue]{hyperref}
+\usepackage{calc}
+
+\newcommand{\f}[1]{\text{#1}}
+\renewcommand{\paratodo}[2]{$\forall~#2$: #1}
+
+\sloppy
+
+\hypersetup{%
+ % Para que el PDF se abra a página completa.
+ pdfstartview= {FitH \hypercalcbp{\paperheight-\topmargin-1in-\headheight}},
+ pdfauthor={Algoritmos y Estructuras de Datos II - DC - UBA}
+% pdfkeywords={TADs básicos},
+% pdfsubject={Tipos abstractos de datos básicos}
+}
+
+\parskip=5pt % 10pt es el tamaño de fuente
+
+% Pongo en 0 la distancia extra entre ítemes.
+\let\olditemize\itemize
+\def\itemize{\olditemize\itemsep=0pt}
+
+% Acomodo fancyhdr.
+\pagestyle{fancy}
+\thispagestyle{fancy}
+\addtolength{\headheight}{1pt}
+\lhead{Algoritmos y Estructuras de Datos II}
+\rhead{$1^{\mathrm{er}}$ cuatrimestre de 2016}
+\cfoot{\thepage /\pageref{LastPage}}
+\renewcommand{\footrulewidth}{0.4pt}
+
+%\author{Algoritmos y Estructuras de Datos II, DC, UBA.}
+%\date{}
+%\title{Tipos abstractos de datos básicos}
+
+\begin{document}
+
+\titulo{Trabajo Practico 1: "Base de Datos"}
+\materia{Algoritmos y Estructuras de Datos II, DC, UBA.}
+\integrante {Gabriel Salvo}{564/14}{gabrielsalvo.cap@gmail.com}
+\integrante {German Ariel Cuacci}{609/14}{germancuacci@gmail.com}
+\integrante {Joel Esteban Camera}{257/14}{joel.e.camera@gmail.com}
+\integrante {Martin Jonas}{180/05}{martinjonas@gmail.com}
+
+
+%Pagina de titulo e indice
+\thispagestyle{empty}
+
+\maketitle
+\tableofcontents
+
+
+\newpage
+
+
+\section{Renombres de TADs}
+
+
+\tadNombre{TAD TipoDeCampo} es \tadNombre{Enum \{NAT, STRING\}}
+
+\tadNombre{TAD Campo} es \tadNombre{String}
+
+\tadNombre{TAD Campos} es \tadNombre{DiccExt(Campo, TipoDeCampo)}
+
+\tadNombre{TAD ClavesT} es \tadNombre{Conjunto(Campo)}
+
+\tadNombre{TAD Registro} es \tadNombre{DiccExt(Campo, Valor)}
+
+\tadNombre{TAD Registros} es \tadNombre{Conjunto(Registro)}
+
+\tadNombre{TAD tablasdb} es \tadNombre{DiccExt(String,Tabla)}
+
+\tadNombre{TAD join} es \tadNombre{Tupla(t1: String, t2: String, clave: String)}
+
+\tadNombre{TAD trigger} es \tadNombre{Tupla(t1: String, t2: String, r: Registro)}
+
+
+
+\section{Notas}
+
+\begin{itemize}
+
+%Asumimos la existencia de la igualdad (no observacional) en todos los tipos basicos. \\
+
+\item Al momento de devolver registros en verJoin, si la tabla 2 del join tiene campos con el mismo nombre que la tabla 1 ademas de la clave utilizada para reralizar el join, estos campos no se muestran en el join.
+
+\item Al momento de agregar un registro en una tabla, si esta tabla tuviese un trigger, y el registro resultante a ser agregado en la tabla 2 no se pudiese agregar, el registro en la tabla 1 es agregado pero el registro desencadenado no.
+	
+\item Asumimos la existencia de la igualdad (no observacional) en todos los tipos basicos.
+
+\item Definimos una seccion de  ``otros predicados'' para definir predicados auxiliares, para ser utilizados unicamente en las restricciones, y que por lo tanto permiten el uso de cuantificadores universales.
+
+	
+	
+\end{itemize}
+	
+	
+
+%TADS
+
+\newpage
+\section{TAD \tadNombre{DiccExt}}
+\input{tadDiccExt}
+
+\newpage
+\section{TAD \tadNombre{Valor}}
+\input{tadValor}
+
+\newpage
+\section{TAD \tadNombre{Tabla}}
+\input{tadTabla}
+
+\newpage
+\section{TAD \tadNombre{Basededatos}}
+\input{tadBasededatos}
+
+
+
+\end{document}

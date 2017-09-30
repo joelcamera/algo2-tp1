@@ -1,0 +1,57 @@
+\begin{tad}{\tadNombre{DiccExt}}
+\tadGeneros{diccext}
+\tadExporta{diccext, otras operaciones }
+\tadUsa{ 
+ \tadNombre{Conjunto(clave)}
+ }
+\tadExtiende{ 
+ \tadNombre{Diccionario}
+ }
+
+\tadParametrosFormales{
+    \tadEncabezadoInline{generos}{clave, significado}
+}
+
+
+\tadAlinearFunciones{borrarVarios}{conj(clave)/cs,dicc(clave, significado)/di}
+
+\tadOtrasOperaciones
+
+\tadOperacion{borrarVarios}{conj(clave)/cs,dicc(clave, significado)/di}{dicc(clave, significado)}{cs $\subseteq$ claves(di) }
+\tadOperacion{borrarResto}{conj(clave)/cs,dicc(clave, significado)/di}{dicc(clave, significado)}{cs $\subseteq$ claves(di) }
+\tadOperacion{unir}{dicc(clave, significado)/di,dicc(clave, significado)/dn}{dicc(clave, significado)}{ vacio?(claves(di) $\cap$ claves(dn)) }
+\tadOperacion{primc}{dicc(clave, significado)/di}{clave}{ $\lnot$vacio?(di) }
+\tadOperacion{sinc}{dicc(clave, significado)/di}{dicc(clave, significado)}{ $\lnot$vacio?(di) }
+\tadOperacion{$\argumento$ [ $\argumento$ ]  }{dicc(clave, significado)/di,clave/a}{ significado}{ def?(a, di)  }
+
+
+\tadAxiomas[\paratodo{conj(clave)}{cs}, \paratodo{dicc(clave,significado)}{di,dn}, \paratodo{clave}{a}]
+
+\tadAlinearAxiomas{borrarVarios(cs,di)}
+
+
+\tadAxioma{borrarVarios(cs,di)}{ \IF vacio?(cs) THEN di 
+						ELSE  borrarVarios(
+									sinUno(cs), borrar( dameUno(cs), di ) 
+								) 
+					 FI  }
+
+
+\tadAxioma{borrarResto(cs,di)}{ borrarVarios(claves(di) - cs, di) }
+
+\tadAxioma{unir(di,dn)}{ \IF vacio?(dn) THEN di 
+									ELSE
+										unir( 								
+											definir( primc(dn), dn[primc(dn)], di) ), 
+											sinc(dn)
+										)
+									FI }
+
+\tadAxioma{primc(di)}{ dameUno(claves(di)) }
+\tadAxioma{sinc(di)}{ borrar( primc(di), di)  }
+\tadAxioma{di [ a ]  }{ obtener(a, di) }
+
+
+
+
+\end{tad}

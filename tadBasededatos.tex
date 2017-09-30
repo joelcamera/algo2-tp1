@@ -1,0 +1,231 @@
+
+
+
+\begin{tad}{\tadNombre{Basededatos}}
+\tadGeneros{bd}
+\tadExporta{bd, generadores, observadores, eliminarJoin, eliminarTrigger, verJoin, tsMasModificadas}
+\tadUsa{\tadNombre{tabla}, \tadNombre{valor}}
+
+
+%===============================================
+%   IGUALDAD OBS
+%===============================================
+\tadIgualdadObservacional{b1}{b2}{bd}{
+	 joins(b1) \igobs joins(b2) $\land$ \\
+	 (tablas(b1) \igobs tablas(b2) $\yluego$ \\
+	 $(\forall s:\text{string})$ s $\in$ claves(tablas(b1)) $\impluego$ triggers(b1,s) \igobs triggers(b2,s) )
+}
+
+
+
+%===============================================
+%   OBSERVADORES
+%===============================================
+\tadAlinearFunciones{igualTipoCamposComunes}{bd/b,string/t,campo/c,valor/v}
+
+\tadObservadores
+\tadOperacion{tablas}{bd}{tablasbd}{}
+\tadOperacion{joins}{bd}{conj(join)}{}
+%puede que tenga sentido tomar una tabla t para triggers porque los triggers son de una tabla conceptualmente
+%y en la axiomatizacion no cambia nada
+\tadOperacion{triggers}{bd/b,string/n}{conj(trigger)}{ def?(n, tablas(b)) }
+
+
+%===============================================
+%   GENERADORES
+%===============================================
+\tadGeneradores
+\tadOperacion{crearBasededatos}{tablasbd}{bd}{}
+
+\tadOperacion{agregarRegistro}{bd/b,string/n,registro/r}{bd}{def?(n, tablas(b)) $\yluego$ regValido?(tablas(b)[n], r)  }
+
+\tadOperacion{eliminarRegistros}{bd/b,string/n,campo/c,valor/v}{bd}{def?(n, tablas(b)) $\yluego$ cvValido?(tablas(b)[n],c,v) } 
+
+\tadOperacion{agregarJoin}{bd/b,join/j}{bd}{(def?(j.t1, tablas(b)) $\land$ def?(j.t2, tablas(b))) $\yluego$ joinValido?(tablas(b)[j.t1], tablas(b)[j.t2]), j) }
+
+\tadOperacion{agregarTrigger}{bd/b,trigger/tr}{bd}{ def?(tr.t1, tablas(b)) $\land$ def?(tr.t2, tablas(b)) $\yluego$ trigValido?(tablas(bd)[tr.t1], tablas(bd)[tr.t2], tr.r) }
+
+
+
+%===============================================
+%   OTRS PREDICADOS
+%===============================================
+\textbf{otros predicados}
+
+\tadOperacion{regValido?}{tabla/t,registro/r}{bool}{ 
+	claves(camposDe(t)) = claves(r) $\yluego$  
+	$(\forall s:\text{string})$ def?(s,r) $\impluego$ tipo(r[s]) = camposDe(t)[s] $\yluego$ 
+	puedoAgregar(t,r)	
+	 }
+
+\tadOperacion{cvValido?}{tabla/t,clave/c,valor/v}{bool}{ 
+	def?(c, camposDe(t)) $\yluego$ camposDe(t)[c] = tipo(v) $\yluego$ puedoBorrar?(t, c, v)}
+
+\tadOperacion{joinValido?}{tabla/t1,tabla/t2,join/j}{bool}{ 
+ j.clave $\in$ (clavesDe(t1) $\cap$ clavesDe(t2)
+$\yluego$ \\camposDe(t1)[j.clave] = camposDe(t2)[j.clave] 
+}
+
+
+\tadOperacion{trigValido?}{tabla/t1,tabla/t2,registro/r}{bool}{ 
+	clavesDe(t1) $\subseteq$ clavesDe(t2) $\yluego$ \\
+	igualCampos?( camposDe(t1), camposDe(t2) ) $\yluego$ \\
+	claves(r) $\subseteq$ claves(camposDe(t2))  $\yluego$ \\
+	igualTipoReg?(camposDe(t2), r)	
+}
+
+\tadOperacion{igualCampos?}{ campos/cs1,campos/cs2}{bool}{ 
+	$(\forall c:\text{campo})$ ( def?(c, cs1) $\land$ def?(c, cs2) ) $\impluego$ cs1[c] = cs2[c]
+}
+
+\tadOperacion{igualTipoReg?}{ campos/cs,registro/r}{bool}{ 
+	$(\forall c:\text{campo})$ def?(c, r) $\impluego$ (def?(c,cs) $\yluego$ tipo(r[c]) = cs[c])
+}
+
+
+
+%===============================================
+%   OTRAS OPERACIONES
+%===============================================
+
+\newpage
+
+\tadOtrasOperaciones
+
+\tadOperacion{eliminarJoin}{bd/b,join/j}{bd}{j $\in$ joins(b)}
+
+\tadOperacion{eliminarTrigger}{bd/b,trigger/t}{bd}{t $\in$ triggers(b)}
+\tadOperacion{regenerarBD}{bd/b,conj(join)/js,conj(trigger)/trs}{bd}{}
+
+
+\tadOperacion{verJoin}{bd/b,join/j}{registros}{j $\in$ joins(b)}
+
+\tadOperacion{aplicarTriggers}{conj(trigger)/trs,registro/r,tablasbd/ts }{tablasbd}{}
+\tadOperacion{aplicarTrigger}{trigger/tr,registro/r,tablasbd/ts }{tablasbd}{}
+\tadOperacion{regDeTrig}{trigger/tr,registro/r,tablasbd/ts}{registro}{}
+
+\tadOperacion{camposSoloT1}{tabla/t1,tabla/t2}{conj(campo)}{}
+\tadOperacion{camposComunes}{tabla/t1,tabla/t2}{conj(campo)}{}
+
+
+\tadOperacion{tsMasModificadas}{bd/b}{tablasbd}{}
+\tadOperacion{masModificadas}{conj(string)/cs,tablasbd/ts,nat/m}{tablasbd}{}
+\tadOperacion{maxCambios}{tablasbd/ts}{nat}{}
+
+
+%===============================================
+%  AXIOMATIZACION
+%===============================================
+
+\tadAxiomas[\paratodo{bd}{b},\paratodo{tabla}{t,t1,t2},\paratodo{tablasbd}{ts},\paratodo{join}{j},\paratodo{trigger}{tr},\paratodo{conj(trigger)}{trs},\paratodo{registro}{r},\paratodo{string}{n},\paratodo{conj(join)}{js},\paratodo{conj(string)}{cs},\paratodo{nat}{m}]
+
+\tadAlinearAxiomas{regenerar(agregnueTablabla(camp,cl))}
+
+%-----------------------
+%   ax: obs
+%-----------------------
+
+\tadAxioma{tablas(crearBasededatos(ts))}{ts}
+\tadAxioma{tablas(agregarRegistro(b,n,r))}{
+			aplicarTriggers(triggers(b, n), r, definir(n, agregarRegistro(tablas(b)[n], r),  tablas(b)	))
+}
+\tadAxioma{tablas(eliminarRegistros(b,n,c,v))}{
+			definir(n, eliminarRegistros(tablas(b)[n], c, v),  tablas(b)	))
+}
+
+\tadAxioma{tablas(agregarTrigger(b,tr))}{tablas(b)}
+
+\tadAxioma{joins(crearBasededatos(t))}{$\emptyset$}
+\tadAxioma{joins(agregarRegistro(b,n,r))}{joins(b)}
+\tadAxioma{joins(eliminarRegistros(b,n,c,v))}{joins(b)}
+\tadAxioma{joins(agregarJoin(b,j))}{Ag(joins(b),j)}
+\tadAxioma{joins(agregarTrigger(b,tr))}{joins(b)}
+
+\tadAxioma{triggers(crearBasededatos(t), n)}{$\emptyset$}
+\tadAxioma{triggers(agregarRegistro(b,n,r), n)}{triggers(b,n)}
+\tadAxioma{triggers(eliminarRegistros(b,n,c,v), n)}{triggers(b,n)}
+\tadAxioma{triggers(agregarJoin(b,j), n)}{triggers(b,n)}
+\tadAxioma{triggers(agregarTrigger(b,tr), n )}{ \IF tr.t1 $=$ n THEN Ag( triggers(b,n), tr)
+	ELSE  triggers(b,n)
+	FI
+}
+
+
+
+%-----------------------
+%   ax: aplicaTrigger
+%-----------------------
+
+\tadAxioma{aplicarTriggers(trs,r,ts)}{ \IF vacio?(trs) THEN ts 
+	ELSE 
+		aplicarTriggers( sinUno(trs), r,  aplicarTrigger( dameUno(trs), r, ts ) )
+	FI
+}
+
+\tadAxioma{aplicarTrigger(tr,r,ts)}{ \IF puedoAgregar?(ts[tr.t2], regDeTrig(tr, r, ts))
+	THEN definir(tr.t2, agregarRegistro(ts[tr.t2],  regDeTrig(tr, r, ts)), ts)
+	ELSE ts
+	FI
+ }
+
+\tadAxioma{regDeTrig(tr, r, ts)}{  unir( borrarVarios(camposSoloT1(ts[tr.t1], ts[tr.t2]), r), tr.r) }
+
+\tadAxioma{camposSoloT1(t1, t2)}{   claves(camposDe(t1)) - camposComunes(t1,t2)  }
+
+\tadAxioma{camposComunes(t1,t2)}{ claves(camposDe(t1)) $\cap$ claves(camposDe(t2)) }
+
+
+%-----------------------
+%   ax: eliminarJoin eliminarTrigger opcion 1
+%-----------------------
+
+
+\tadAxioma{eliminarJoin(b,j)}{regenerarBD( crearBasededatos( tablas(b)), joins(b) - \{j\}, triggers(b) )}
+\tadAxioma{eliminarTrigger(b,t)}{regenerarBD( crearBasededatos( tablas(b)), joins(b), triggers(b) - \{t\} )}
+
+\tadAxioma{regenerarBD(b,js,trs)}{\IF vacio?(js) $\land$ vacio?(trs) THEN b
+              ELSE {
+                    \IF vacio?(js) THEN
+                           regenerarBD(agregarTrigger(b,dameUno(trs)),js,sinUno(trs))
+                     ELSE 
+                           regenerarBD(agregarJoin(b,dameUno(js)),sinUno(js),trs)
+                     FI
+              }
+              FI
+}
+
+%-----------------------
+%   ax: verJoin opcion 
+%-----------------------
+
+\tadAxioma{verJoin(b,j)}{verJoin(tablas(b)[j.t1], tablas(b)[j.t2], j.clave)}
+
+%-----------------------
+%   ax: modificaciones
+%-----------------------
+
+\tadAxioma{tsMasModificadas(b)}{
+	masModificadas(claves(tablas(b)),tablas(b), \\maxCambios(tablas(b)))
+}
+
+\tadAxioma{masModificadas(cs,ts,m)}{
+	\IF $\emptyset$?(cs) THEN
+		ts
+	ELSE{ \IF \#cambios(ts[dameUno(cs)]) < m THEN
+			borrar(dameUno(cs), masModificadas(sinUno(cs), ts, m) )
+		ELSE
+			masModificadas(sinUno(cs),ts,m)
+		FI
+		}
+	FI		
+}
+
+\tadAxioma{maxCambios(ts)}{
+	\IF vacio?(claves(ts)) THEN
+		0
+	ELSE
+        max(\#cambios(ts[primc(ts)]),maxCambios(sinc(ts)))
+    FI
+}
+
+\end{tad}

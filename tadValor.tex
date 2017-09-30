@@ -1,0 +1,53 @@
+\begin{tad}{\tadNombre{Valor}}
+\tadGeneros{valor}
+\tadExporta{valor, generadores, observadores,  = }
+\tadUsa{ 
+ \tadNombre{String}, 
+ \tadNombre{Nat}, 
+ \tadNombre{TipoDeCampo}
+ }
+
+
+\tadIgualdadObservacional{x}{y}{valor}{
+					 tipo(x) $\igobs$ tipo(y) $\yluego$ 
+					 (tipo(x) $\igobs$ NAT $\yluego$ valorNat(x) $\igobs$ valorNat(y)) $\oluego$
+					 (tipo(x) $\igobs$ STRING $\yluego$ valorString(x) $\igobs$ valorString(y))
+}
+
+\tadAlinearFunciones{valorDeString}{valor/v,valor/v2}
+
+\tadObservadores
+\tadOperacion{tipo}{valor}{tipodecampo}{}
+\tadOperacion{valorDeNat}{valor/v}{nat}{tipo(v) = NAT}
+\tadOperacion{valorDeString}{valor/v}{string}{tipo(v) = STRING}
+
+\tadGeneradores
+\tadOperacion{valorNat}{nat}{valor}{}
+\tadOperacion{valorString}{string}{valor}{}
+
+
+\tadOtrasOperaciones
+\tadOperacion{$\argumento$  = $\argumento$ }{valor/v,valor/v'}{bool}{}
+
+
+
+\tadAxiomas[\paratodo{v,v'}{valor}, \paratodo{string}{s}, \paratodo{nat}{n}]
+
+\tadAlinearAxiomas{valorDeString(valorString(s))}
+\tadAxioma{tipo(valorNat(s))}{NAT}
+\tadAxioma{tipo(valorString(s))}{STRING}
+\tadAxioma{valorDeNat(valorNat(n))}{n}
+\tadAxioma{valorDeString(valorString(s))}{s}
+
+\tadAxioma{v = v'}{ tipo(v) = tipo(v') $\yluego$ 
+	\IF tipo(v) = NAT THEN 
+		valorDeNat(v) = valorDeNat(v') 
+	ELSE 
+		valorDeString(v) = valorDeString(v') 
+	FI  
+}
+
+
+
+
+\end{tad}
